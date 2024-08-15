@@ -16,13 +16,13 @@ class SavePostsController extends Controller
 
         // when user like the post first time
         if (!$isExist) {
-            $postLike = SavePosts::create([
+            $savePost = SavePosts::create([
                 "post_id" => $request->input("post_id"),
                 "user_id" => $request->header("user_id"),
                 "is_save" => true
             ]);
 
-            if ($postLike) {
+            if ($savePost) {
                 return response()->json([
                     "status" => "success",
                     "message" => "You have bookmarked the post"
@@ -36,13 +36,13 @@ class SavePostsController extends Controller
 
         // when user dislike the post
         if ($isExist->is_save == 1) {
-            $postLike = SavePosts::where("post_id", "=", $request->input("post_id"))
+            $savePost = SavePosts::where("post_id", "=", $request->input("post_id"))
                 ->where("user_id", "=", $request->header("user_id"))
                 ->update([
                     "is_save" => false
                 ]);
 
-            if ($postLike) {
+            if ($savePost) {
                 return response()->json([
                     "status" => "success",
                     "message" => "you have removed from bookmark the post"
@@ -54,12 +54,12 @@ class SavePostsController extends Controller
             ]);
             // when user again like the post
         } else {
-            $postLike = SavePosts::where("post_id", "=", $request->input("post_id"))
+            $savePost = SavePosts::where("post_id", "=", $request->input("post_id"))
                 ->where("user_id", "=", $request->header("user_id"))
                 ->update([
                     "is_save" => true
                 ]);
-            if ($postLike) {
+            if ($savePost) {
                 return response()->json([
                     "status" => "success",
                     "message" => "you have again bookmarked the post"

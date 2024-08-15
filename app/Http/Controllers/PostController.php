@@ -368,4 +368,44 @@ class PostController extends Controller
 
         return $post;
     }
+
+    public function findPostByTag(Request $request)
+    {
+        $tagId = Tag::where("title", "=", $request->input("tag_name"))->first()->id;
+
+        //get post id associated with the given tag
+        $postIds = DB::table("post_tags")
+            ->where("tag_id", "=", $tagId)
+            ->pluck("post_id");
+
+        $posts = DB::table('posts')
+            ->join('users', 'users.id', '=', 'posts.user_id')
+            ->leftJoin('post_tags', 'posts.id', '=', 'post_tags.post_id')
+            ->leftJoin('tags', 'post_tags.tag_id', '=', 'tags.id')
+            ->whereIn("post_tags.post_id", $postIds)
+            ->where("active", "=", true)
+            ->select(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'users.name',
+                'users.email',
+                DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
+            )
+            ->groupBy(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'users.name',
+                'users.email'
+            )
+            ->paginate(10);
+        return $posts;
+    }
 }
