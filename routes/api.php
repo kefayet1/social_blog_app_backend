@@ -59,6 +59,7 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     //follow post
     Route::post("follow_And_Unfollow_Tag", [FollowTagController::class, "followAndUnFollowTag"]);
+    Route::post("get_following_tags", [FollowTagController::class, "getFollowingTag"]);
 });
 
 
