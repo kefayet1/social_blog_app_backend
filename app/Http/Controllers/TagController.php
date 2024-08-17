@@ -200,7 +200,8 @@ class TagController extends Controller
             $isUserFollow = DB::table("follow_tags")
                 ->where("user_id", "=", $request->header("user_id"))
                 ->where("tag_id", "=", $tagId->id)
-                ->first()->is_follow;
+                ->first()?->is_follow;
+            
             $combineArray = [
                 ...(array) $tagId,
                 'is_follow' => $isUserFollow
@@ -210,7 +211,7 @@ class TagController extends Controller
         if ($tagId !== (object) []) {
             return response()->json([
                 'status' => 'success',
-                'data' => $request->header("user_id") ? $combineArray : $tagId
+                'data' => $request->header("user_id") && $isUserFollow != null ? $combineArray : $tagId
             ]);
         }
 
