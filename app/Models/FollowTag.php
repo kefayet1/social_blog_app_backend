@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class FollowTag extends Model
 {
     use HasFactory;
+    protected $fillable = ["user_id", "tag_id", "is_follow"];
 }

@@ -3,12 +3,14 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FollowTagController;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\resetPassController;
 use App\Http\Controllers\SavePostsController;
 use App\Http\Controllers\TagController;
+use App\Models\FollowTag;
 use App\Models\PostLike;
 use Illuminate\Support\Facades\Route;
 
@@ -33,12 +35,14 @@ Route::post("/verify_otp", [OTPController::class, "verifyOtp"]);
 Route::post("/reset_password", [resetPassController::class, "resetPassword"]);
 
 Route::middleware(['tokenVerify'])->group(function () {
+    //tag
     Route::post("/get_tags", [TagController::class, "getAllTag"]);
     Route::post("/get_tag_with_name", [TagController::class, "getTagWithUser"]);
     Route::post("/create_tag", [TagController::class, "createTag"]);
     Route::post("/tag_delete", [TagController::class, "tagDelete"]);
     Route::post("/update_tag", [TagController::class, "updateTag"]);
     Route::post("/search_tag", [TagController::class, "searchTag"]);
+    Route::post("/get_tag_details", [TagController::class, "getTagDetails"]);
 
     //Post route
     Route::post("/create_post", [PostController::class, "createPost"]);
@@ -52,6 +56,9 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     //save post
     Route::post("/save_post", [SavePostsController::class, "savePost"]);
+
+    //follow post
+    Route::post("follow_And_Unfollow_Tag", [FollowTagController::class, "followAndUnFollowTag"]);
 });
 
 
@@ -64,3 +71,7 @@ Route::post("/create_comment", [CommentController::class, "createComment"]);
 
 //Post
 Route::post("/get_post_by_tag_name", [PostController::class, "findPostByTag"]);
+
+//tag
+// without it will not give is_follow value
+Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetails"]);

@@ -179,4 +179,44 @@ class TagController extends Controller
             "message" => "not found!"
         ], 404);
     }
+
+    public function getTagDetails(Request $request)
+    {
+        $tagId = DB::table("tags")
+            ->leftJoin("follow_tags", "tags.id", "=", "follow_tags.tag_id")
+            ->where("tags.title", "=", $request->input("tag_name"))
+            ->select(
+                "tags.id",
+                "tags.title",
+                "tags.hashtag",
+                "tags.body",
+                "tags.thumbnail",
+                DB::raw("COUNT(CASE WHEN follow_tags.is_follow = 1 THEN 1 END) as totalFollow")
+            )
+            ->groupBy("tags.id", "tags.title", "tags.hashtag", "tags.body", "tags.thumbnail", "follow_tags.is_follow")
+            ->first();
+
+        if ($request->header("user_id")) {
+            $isUserFollow = DB::table("follow_tags")
+                ->where("user_id", "=", $request->header("user_id"))
+                ->where("tag_id", "=", $tagId->id)
+                ->first()->is_follow;
+            $combineArray = [
+                ...(array) $tagId,
+                'is_follow' => $isUserFollow
+            ];
+        }
+        // dd($isUserFollow->is_follow);
+        if ($tagId !== (object) []) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $request->header("user_id") ? $combineArray : $tagId
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'failed',
+            'data' => "something is wrong!"
+        ]);
+    }
 }

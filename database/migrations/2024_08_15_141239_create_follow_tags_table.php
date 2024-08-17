@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('follow_tags', function (Blueprint $table) {
             $table->id();
-            $table->boolean("is_follow")->default("false");
+            $table->boolean("is_follow")->default(false);
             $table->foreignId("tag_id")->references("id")->on("tags")
                 ->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId("user_id")->references("id")->on("users")
