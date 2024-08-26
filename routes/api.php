@@ -7,6 +7,7 @@ use App\Http\Controllers\FollowTagController;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\resetPassController;
 use App\Http\Controllers\SavePostsController;
 use App\Http\Controllers\TagController;
@@ -60,6 +61,9 @@ Route::middleware(['tokenVerify'])->group(function () {
     //follow post
     Route::post("follow_And_Unfollow_Tag", [FollowTagController::class, "followAndUnFollowTag"]);
     Route::post("get_following_tags", [FollowTagController::class, "getFollowingTag"]);
+
+    // profile
+    Route::post("/create_profile", [ProfileController::class, "createProfile"]);
 });
 
 
