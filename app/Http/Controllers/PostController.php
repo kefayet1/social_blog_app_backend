@@ -408,4 +408,39 @@ class PostController extends Controller
             ->paginate(10);
         return $posts;
     }
+
+    public function getPostByUserId(Request $request)
+    {
+        $posts = DB::table("posts")
+            ->leftJoin("post_tags", "posts.id", "=", "post_tags.post_id")
+            ->leftJoin("tags", "post_tags.tag_id", "=", "tags.id")
+            ->leftJoin("users", "posts.user_id", "=", "users.id")
+            ->where("posts.user_id", "=", $request->input('id'))
+            ->select(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'users.name',
+                'users.email',
+                "posts.user_id",
+                DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
+            )
+            ->groupBy(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                        "posts.user_id",
+                'users.name',
+                'users.email',
+            )
+            ->paginate(10);
+
+            return $posts;
+    }
 }

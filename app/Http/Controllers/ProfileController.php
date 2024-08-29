@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Profile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -45,6 +46,49 @@ class ProfileController extends Controller
         return response()->json([
             "status" => "success",
             "message" => "your profile is created"
+        ]);
+    }
+
+    public function getUserProfile(Request $request)
+    {
+        $profile = DB::table("profiles")
+            ->leftJoin("users", "profiles.user_id", "=", "users.id")
+            ->where("profiles.user_id", "=", $request->input("id"))
+            ->select(
+                "profiles.profile_image",
+                "profiles.website_url",
+                "profiles.location",
+                "profiles.bio",
+                "profiles.work",
+                "profiles.eduction",
+                "profiles.website_url",
+                "users.name",
+                "users.email",
+                "users.created_at"
+            )
+            ->groupBy(
+                "profiles.profile_image",
+                "profiles.website_url",
+                "profiles.location",
+                "profiles.bio",
+                "profiles.work",
+                "profiles.eduction",
+                "profiles.website_url",
+                "users.name",
+                "users.email",
+                "users.created_at"
+            )
+            ->first();
+
+        if (!$profile) {
+            return response()->json([
+                "status" => "failed",
+                "message" => "something went wrong!"
+            ]);
+        }
+        return response()->json([
+            "status" => "success",
+            "data" => $profile
         ]);
     }
 }

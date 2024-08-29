@@ -76,7 +76,11 @@ Route::post("/create_comment", [CommentController::class, "createComment"]);
 
 //Post
 Route::post("/get_post_by_tag_name", [PostController::class, "findPostByTag"]);
+Route::post("/get_post_by_user_id", [PostController::class, "getPostByUserId"]);
 
 //tag
 // without it will not give is_follow value
 Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetails"]);
+
+//profile
+Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
