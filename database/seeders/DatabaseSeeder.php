@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\PostTags;
+use App\Models\Profile;
 use App\Models\Tag;
 use App\Models\User;
 use Carbon\Carbon;
@@ -367,5 +368,21 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
+        //profile
+        $totalUser = User::count();
+        foreach(range(1, $totalUser) as $userId){
+            Profile::create([
+                'website_url' => fake()->domainName(),
+                'location' => fake()->address(),
+                'bio' => fake()->bs(),
+                'work' => fake()->jobTitle(),
+                'education' => fake()->text(22),
+                'profile_image' => 'https://randomuser.me/api/portraits/men/' . $userId . '.jpg',
+                'user_id' => $userId
+            ]);
+        }
+
+        //
     }
 }

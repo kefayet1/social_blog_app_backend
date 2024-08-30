@@ -262,6 +262,7 @@ class PostController extends Controller
             ->leftJoin('post_tags', 'posts.id', '=', 'post_tags.post_id')
             ->leftJoin('tags', 'post_tags.tag_id', '=', 'tags.id')
             ->leftJoin("comments", "posts.id", "=", "comments.id")
+            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id" )
             ->where("posts.published_at", "<", Carbon::now())
             ->where("active", "=", true)
             ->select(
@@ -271,8 +272,10 @@ class PostController extends Controller
                 'posts.body',
                 'posts.active',
                 'posts.published_at',
+                'posts.user_id',
                 'users.name',
                 'users.email',
+                "profiles.profile_image",
                 DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
             )
             ->groupBy(
@@ -282,8 +285,10 @@ class PostController extends Controller
                 'posts.body',
                 'posts.active',
                 'posts.published_at',
+                "posts.user_id",
                 'users.name',
-                'users.email'
+                'users.email',
+                "profiles.profile_image",
             )
             ->orderByRaw("DATE(posts.published_at) = CURDATE() DESC")
             ->orderBy("posts.published_at", 'DESC')
@@ -435,12 +440,12 @@ class PostController extends Controller
                 'posts.body',
                 'posts.active',
                 'posts.published_at',
-                        "posts.user_id",
+                "posts.user_id",
                 'users.name',
                 'users.email',
             )
             ->paginate(10);
 
-            return $posts;
+        return $posts;
     }
 }

@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FollowTagController;
+use App\Http\Controllers\FollowUserController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
@@ -64,6 +66,10 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     // profile
     Route::post("/create_profile", [ProfileController::class, "createProfile"]);
+    Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
+
+    // following users
+    Route::post("/follow_unFollow_user", [FollowUserController::class, "followAndUnfollowUser"]);
 });
 
 
@@ -84,3 +90,5 @@ Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetai
 
 //profile
 Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
+
+Route::post("/test_notification", [NotificationController::class, "getNotification"]);

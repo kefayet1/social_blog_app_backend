@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string("location", 100)->nullable();
             $table->string("bio", 100)->nullable();
             $table->string("work", 100)->nullable();
-            $table->string('eduction', 100)->nullable();
+            $table->string('education', 100)->nullable();
             $table->foreignId("user_id")->references("id")->on("users")
                 ->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

@@ -12,7 +12,13 @@ return new class extends Migration {
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            
+            $table->string("text", 300)->nullable();
+            $table->boolean("is_seen")->default(false);
+            $table->enum("type", ['post', 'tag_post', 'following', 'comment']);
+            $table->foreignId("user_id")->references("id")->on("users")
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId("actor_id")->references("id")->on("users")
+                ->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
     }
