@@ -387,6 +387,7 @@ class PostController extends Controller
             ->join('users', 'users.id', '=', 'posts.user_id')
             ->leftJoin('post_tags', 'posts.id', '=', 'post_tags.post_id')
             ->leftJoin('tags', 'post_tags.tag_id', '=', 'tags.id')
+            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
             ->whereIn("post_tags.post_id", $postIds)
             ->where("active", "=", true)
             ->select(
@@ -398,6 +399,7 @@ class PostController extends Controller
                 'posts.published_at',
                 'users.name',
                 'users.email',
+                "profiles.profile_image",
                 DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
             )
             ->groupBy(
@@ -408,7 +410,8 @@ class PostController extends Controller
                 'posts.active',
                 'posts.published_at',
                 'users.name',
-                'users.email'
+                'users.email',
+                "profiles.profile_image",
             )
             ->paginate(10);
         return $posts;
@@ -420,6 +423,7 @@ class PostController extends Controller
             ->leftJoin("post_tags", "posts.id", "=", "post_tags.post_id")
             ->leftJoin("tags", "post_tags.tag_id", "=", "tags.id")
             ->leftJoin("users", "posts.user_id", "=", "users.id")
+            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
             ->where("posts.user_id", "=", $request->input('id'))
             ->select(
                 'posts.id',
@@ -431,6 +435,7 @@ class PostController extends Controller
                 'users.name',
                 'users.email',
                 "posts.user_id",
+                "profiles.profile_image",
                 DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
             )
             ->groupBy(
@@ -443,6 +448,7 @@ class PostController extends Controller
                 "posts.user_id",
                 'users.name',
                 'users.email',
+                "profiles.profile_image"
             )
             ->paginate(10);
 
