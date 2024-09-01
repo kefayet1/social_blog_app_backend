@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FollowUser;
+use Faker\Core\Number;
 use Illuminate\Http\Request;
 
 class FollowUserController extends Controller
@@ -11,25 +12,27 @@ class FollowUserController extends Controller
     {
 
         $isExist = FollowUser::where("user_id", "=", $request->header("user_id"))
+            ->where("following_user_id", "=", $request->input("following_user_id"))
             ->first();
-
         // when user like the post first time
         if (!$isExist) {
             $postLike = FollowUser::create([
                 "user_id" => $request->header("user_id"),
                 "following_user_id" => $request->input("following_user_id"),
-                "is_follow" => true
+                "is_follow" => true,
             ]);
 
             if ($postLike) {
                 return response()->json([
                     "status" => "success",
-                    "message" => "you have following the publisher"
+                    "message" => "you are following the publisher"
                 ]);
             }
             return response()->json([
                 "status" => "failed",
-                "message" => "something is wrong!"
+                "message" => "something is wrong!",
+                "header" => $request->header("user_id"),
+                "follow" => $request->input("following_user_id")
             ]);
         }
 
@@ -49,7 +52,9 @@ class FollowUserController extends Controller
             }
             return response()->json([
                 "status" => "failed",
-                "message" => "something is wrong!"
+                "message" => "something is wrong!",
+                "header" => $request->header("user_id"),
+                "follow" => $request->input("following_user_id")
             ]);
             // when user again like the post
         } else {
@@ -66,12 +71,10 @@ class FollowUserController extends Controller
             }
             return response()->json([
                 "status" => "failed",
-                "message" => "something is wrong!"
+                "message" => "something is wrong!",
+
             ]);
         }
-
-
-
-
     }
+
 }

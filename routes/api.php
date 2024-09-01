@@ -70,6 +70,7 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     // following users
     Route::post("/follow_unFollow_user", [FollowUserController::class, "followAndUnfollowUser"]);
+    Route::post("/get_follow_user", [FollowUserController::class, "getUserFollowOrUnFollow"]);
 });
 
 
@@ -89,6 +90,6 @@ Route::post("/get_post_by_user_id", [PostController::class, "getPostByUserId"]);
 Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetails"]);
 
 //profile
-Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
+// Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
 
 Route::post("/test_notification", [NotificationController::class, "getNotification"]);

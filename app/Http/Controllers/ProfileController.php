@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FollowUser;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use PhpParser\Node\Stmt\TryCatch;
@@ -43,11 +44,10 @@ class ProfileController extends Controller
     }
     public function getUserProfile(Request $request)
     {
-        // $isUserFollow = DB::table('users')
-        //     ->leftJoin("follow_users", "users.id", "=", "follow_users.user_id")
-        //     ->where("follow_users.user_id", "=", $request->header("user_id"))
-        //     ->first()->is_follow;
-        // dd($isUserFollow);
+        $followUser = FollowUser::
+            where("user_id", "=", $request->header("user_id"))
+            ->where("following_user_id", "=", $request->input("id"))
+            ->first()->is_follow ?? null;
         $profile = DB::table("profiles")
             ->leftJoin("users", "profiles.user_id", "=", "users.id")
             ->where("profiles.user_id", "=", $request->input("id"))
@@ -59,6 +59,7 @@ class ProfileController extends Controller
                 "profiles.work",
                 "profiles.education",
                 "profiles.website_url",
+                "profiles.user_id",
                 "users.name",
                 "users.email",
                 "users.created_at"
@@ -71,6 +72,7 @@ class ProfileController extends Controller
                 "profiles.work",
                 "profiles.education",
                 "profiles.website_url",
+                "profiles.user_id",
                 "users.name",
                 "users.email",
                 "users.created_at"
@@ -85,7 +87,11 @@ class ProfileController extends Controller
         }
         return response()->json([
             "status" => "success",
-            "data" => $profile
+            "data" => [
+                ...(array)$profile,
+                "is_follow" => $followUser
+            ],
+            "second" => $followUser
         ]);
     }
 }

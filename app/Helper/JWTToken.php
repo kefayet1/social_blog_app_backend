@@ -11,6 +11,11 @@ class JWTToken
     {
         $key = env("JWT_KEY");
 
+         // Check if the key is valid
+         if (!$key || !is_string($key)) {
+            throw new \InvalidArgumentException('JWT key must be a non-null string.');
+        }
+
         $payload = [
             'iss' => "laravel-token",
             'ias' => time(),
@@ -25,6 +30,11 @@ class JWTToken
     static function verifyToken($token)
     {
         $key = env("JWT_KEY");
+
+         // Check if the key is valid
+         if (!$key || !is_string($key)) {
+            throw new \InvalidArgumentException('JWT key must be a non-null string.');
+        }
         try {
             // Decode the token
             $jwt = JWT::decode($token, new Key($key, 'HS256'));
