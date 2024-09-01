@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('table_notifications', function (Blueprint $table) {
             $table->id();
             $table->string("text", 300)->nullable();
             $table->boolean("is_seen")->default(false);
@@ -18,6 +18,10 @@ return new class extends Migration {
             $table->foreignId("user_id")->references("id")->on("users")
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId("actor_id")->references("id")->on("users")
+                ->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId("tag_id")->nullable()->references("id")->on("tags")
+                ->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId("post_id")->nullable()->references("id")->on("posts")
                 ->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
@@ -28,6 +32,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('table_notifications');
     }
 };

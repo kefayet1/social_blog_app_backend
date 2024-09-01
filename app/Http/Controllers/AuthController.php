@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helper\JWTToken;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class AuthController extends Controller
         $user = User::where("email", "=", $validated['email'])
             ->where("password", "=", $validated['password'])->first();
 
-
+        $profile_image = Profile::where("user_id", "=", $user->id)->first('profile_image')['profile_image'];
 
         if (!$user) {
             return response()->json([
@@ -36,7 +37,8 @@ class AuthController extends Controller
             "status" => "success",
             "token" => $token,
             "id" => $user->id,
-            "user_role" => $userRole
+            "user_role" => $userRole,
+            "profile_image" => $profile_image
         ]);
     }
 
