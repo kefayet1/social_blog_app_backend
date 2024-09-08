@@ -38,7 +38,9 @@ class AuthController extends Controller
             "token" => $token,
             "id" => $user->id,
             "user_role" => $userRole,
-            "profile_image" => $profile_image
+            "profile_image" => $profile_image,
+            "name" => $user->name,
+            "email" => $user->email
         ]);
     }
 

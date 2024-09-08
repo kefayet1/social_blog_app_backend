@@ -74,6 +74,8 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     // following users
     Route::post("/follow_unFollow_user", [FollowUserController::class, "followAndUnfollowUser"]);
+    Route::post("/get_followers", [FollowUserController::class, "getFollowers"]);
+    Route::post("/get_following", [FollowUserController::class, "getFollowing"]);
     Route::post("/get_follow_user", [FollowUserController::class, "getUserFollowOrUnFollow"]);
 
     //notification
