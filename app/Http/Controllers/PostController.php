@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SendNotification;
+use App\Models\FollowTag;
+use App\Models\FollowUser;
+use App\Models\Notification;
 use DateInterval;
 use Carbon\Carbon;
 use App\Models\Tag;
@@ -11,6 +15,7 @@ use App\Models\PostTags;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use PhpParser\Node\Stmt\TryCatch;
 
 class PostController extends Controller
 {
@@ -52,11 +57,90 @@ class PostController extends Controller
             "thumbnail" => $img_url
         ]);
 
+        //notifications
+        //1st priority of notification is. if user is following article write the user will get notification.
+        //2nd priority: if user is not following article writer the user will not get notification.
+        //3rd priority: if user is not following article writer but follow article writer written particular tag.The user will get notification from tag
+
+        //those who are following the user
+        $followingUserId = FollowUser::where("following_user_id", "=", $request->header("user_id"))
+            ->where("is_follow", "=", true)->get()->pluck('user_id');
+
+        //create notification
+        foreach ($followingUserId as $id) {
+            $notification = Notification::create([
+                "text" => "new Post added now",
+                "type" => "post",
+                "user_id" => $id,
+                "actor_id" => $request->header("user_id"),
+                "post_id" => $post->id,
+            ]);
+            event(new SendNotification(
+                [
+                    [
+                        "id" => $notification->id,
+                        "title" => $notification->title,
+                        "user_id" => $notification->user_id,
+                        "actor_id" => $notification->actor_id,
+                        "created_at" => $notification->created_at,
+                        "is_seen" => $notification->is_seen,
+                        "type" => $notification->type,
+                        "name" => $request->header("name"),
+                        "post_id" => $post->id,
+                        "event" => 'first_event'
+                    ]
+                ]
+            ));
+        }
+
         // if user given tags are not exist in the database then it will insert to database
         if ($post) {
-            $tags = explode(",", $request->input("tags"));
+            $tags = array_map(fn($value) => str_replace(['\'', '"'], '', $value), explode(',', trim($request->input('tags'), '[]')));
+
             foreach ($tags as $tag) {
-                $tagId = Tag::where("title", "=", $tag)->pluck('id')->first();
+                $tagId = Tag::where("title", "=", $tag)->first('id')['id'];
+
+                //retrieving user those who are following the tag. article writer written particular tag 
+                $userFollowingTag = FollowTag::where("tag_id", "=", $tagId)->get()->pluck("user_id");
+
+                //finding those user who are not present in the $followingUserId. bcz the notification already created for them
+                // in there are those who are not following article writer but following the particular tag
+                $uniqueValue = array_merge(array_diff(json_decode($userFollowingTag), json_decode($followingUserId)));
+
+                //creating notification for them
+                foreach ($uniqueValue as $id) {
+                    $isNotifiAvlable = Notification::where("post_id", "=", $post->id)
+                        ->where("user_id", "=", $id)
+                        ->first();
+                    if (!$isNotifiAvlable) {
+                        $notification = Notification::create([
+                            "user_id" => $id,
+                            "actor_id" => $request->header("user_id"),
+                            "tag_id" => $tagId,
+                            "type" => "tag_post",
+                            "name" => $request->header("name"),
+                            "post_id" => $post->id,
+                            "is_seen" => false,
+                            "tag_title" => $tag,
+                        ]);
+                        event(new SendNotification([
+                            [
+                                "id" => $notification->id,
+                                "title" => $notification->title,
+                                "user_id" => $notification->user_id,
+                                "actor_id" => $notification->actor_id,
+                                "created_at" => $notification->created_at,
+                                "tag_id" => $notification->tag_id,
+                                "type" => $notification->type,
+                                "name" => $request->header("name"),
+                                "post_id" => $post->id,
+                                "tag_title" => $tag,
+                                "event" => 'second_event'
+                            ]
+                        ]));
+                    }
+                }
+
                 if (!$tagId) {
                     $createdTag = Tag::create([
                         "title" => $tag,
@@ -77,7 +161,7 @@ class PostController extends Controller
                     }
                 } else {
                     PostTags::create([
-                        "post_id" => $post['id'],
+                        "post_id" => $post->id,
                         "tag_id" => $tagId
                     ]);
                 }
@@ -252,7 +336,7 @@ class PostController extends Controller
         //post published date
         $postPublishObj = clone $postDate;
         $postPublishDate = $postPublishObj->add(new DateInterval("P{$randomDay}D"));
-        dd([$postDate, $postPublishDate]);
+        // dd([$postDate, $postPublishDate]);
     }
 
     public function noAuthGetPost()
@@ -262,7 +346,7 @@ class PostController extends Controller
             ->leftJoin('post_tags', 'posts.id', '=', 'post_tags.post_id')
             ->leftJoin('tags', 'post_tags.tag_id', '=', 'tags.id')
             ->leftJoin("comments", "posts.id", "=", "comments.id")
-            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id" )
+            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
             ->where("posts.published_at", "<", Carbon::now())
             ->where("active", "=", true)
             ->select(

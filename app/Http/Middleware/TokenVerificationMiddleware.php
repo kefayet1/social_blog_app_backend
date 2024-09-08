@@ -32,9 +32,10 @@ class TokenVerificationMiddleware
             }
 
             $id = $user->id; 
-
+            $name = $user->name;
             $request->headers->set("email", $email);
             $request->headers->set("user_id", $id);
+            $request->headers->set("name", $name);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Unauthorized', 'message' => get_class($e)], 401);
         }

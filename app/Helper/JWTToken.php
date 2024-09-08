@@ -10,7 +10,6 @@ class JWTToken
     static function createToken($userEmail)
     {
         $key = env("JWT_KEY");
-
          // Check if the key is valid
          if (!$key || !is_string($key)) {
             throw new \InvalidArgumentException('JWT key must be a non-null string.');

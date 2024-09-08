@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\Comment;
+use App\Models\FollowUser;
 use App\Models\Post;
 use App\Models\PostTags;
 use App\Models\Profile;
@@ -371,7 +372,7 @@ class DatabaseSeeder extends Seeder
 
         //profile
         $totalUser = User::count();
-        foreach(range(1, $totalUser) as $userId){
+        foreach (range(1, $totalUser) as $userId) {
             Profile::create([
                 'website_url' => fake()->domainName(),
                 'location' => fake()->address(),
@@ -383,6 +384,17 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        //
+        //follow user
+        foreach (range(1, $totalUser) as $userId) {
+            foreach (range(1, $totalUser) as $followingId) {
+                if ($userId != $followingId) {
+                    FollowUser::create([
+                        'is_follow' => true,
+                        'user_id' => $userId,
+                        "following_user_id" => $followingId
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -1,21 +1,25 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CommentController;
-use App\Http\Controllers\FollowTagController;
-use App\Http\Controllers\FollowUserController;
-use App\Http\Controllers\NotificationController;
+use App\Models\User;
+use App\Models\PostLike;
+use App\Models\FollowTag;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OTPController;
+use App\Http\Controllers\TagController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\PostLikeController;
+use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PostLikeController;
+use App\Http\Controllers\FollowTagController;
 use App\Http\Controllers\resetPassController;
 use App\Http\Controllers\SavePostsController;
-use App\Http\Controllers\TagController;
-use App\Models\FollowTag;
-use App\Models\PostLike;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FollowUserController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +75,10 @@ Route::middleware(['tokenVerify'])->group(function () {
     // following users
     Route::post("/follow_unFollow_user", [FollowUserController::class, "followAndUnfollowUser"]);
     Route::post("/get_follow_user", [FollowUserController::class, "getUserFollowOrUnFollow"]);
+
+    //notification
+    Route::post("/get_notification", [NotificationController::class, "getNotification"]);
+
 });
 
 
@@ -92,4 +100,3 @@ Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetai
 //profile
 // Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);
 
-Route::post("/test_notification", [NotificationController::class, "getNotification"]);
