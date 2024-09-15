@@ -201,7 +201,7 @@ class TagController extends Controller
                 ->where("user_id", "=", $request->header("user_id"))
                 ->where("tag_id", "=", $tagId->id)
                 ->first()?->is_follow;
-            
+
             $combineArray = [
                 ...(array) $tagId,
                 'is_follow' => $isUserFollow
@@ -219,5 +219,25 @@ class TagController extends Controller
             'status' => 'failed',
             'data' => "something is wrong!"
         ]);
+    }
+
+    public function getTagWithPostCount(Request $request)
+    {
+        $tags = DB::table("tags")
+            ->leftJoin("post_tags", "tags.id", "=", "post_tags.tag_id")
+            ->select("tags.title", "tags.body", "tags.thumbnail", DB::raw("count(post_tags.post_id) as post_count"))
+            ->groupBy("tags.title", "tags.body", "tags.thumbnail")
+            ->get();
+
+        if ($tags) {
+            return response()->json([
+                "status" => "success",
+                "data" => $tags,
+            ]);
+        }
+        return response()->json([
+            "status" => "failed",
+            "message" => "not found!"
+        ], 404);
     }
 }

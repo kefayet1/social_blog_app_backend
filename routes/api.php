@@ -58,6 +58,9 @@ Route::middleware(['tokenVerify'])->group(function () {
     Route::post("/update_post", [PostController::class, "postUpdate"]);
     Route::post("/noAuth_get_post_with_auth", [PostController::class, "getSinglePostWithAuth"]);
 
+    //post frontend
+    Route::post("/get_relevant_post", [PostController::class, "getRelevantPost"]);
+    
     //post like
     Route::post("/like_post", [PostLikeController::class, "likePost"]);
 
@@ -98,6 +101,8 @@ Route::post("/get_post_by_user_id", [PostController::class, "getPostByUserId"]);
 //tag
 // without it will not give is_follow value
 Route::post("/get_tag_details_without_auth", [TagController::class, "getTagDetails"]);
+
+Route::post("/get_tag_with_post_count", [TagController::class, "getTagWithPostCount"]);
 
 //profile
 // Route::post("/get_profile_details", [ProfileController::class, "getUserProfile"]);

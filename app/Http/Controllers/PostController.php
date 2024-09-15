@@ -22,14 +22,14 @@ class PostController extends Controller
     //
     public function createPost(Request $request)
     {
-        // $validated = $request->validate([
-        //     'title' => 'required|max:300',
-        //     'tags' => 'array|max:5',
-        //     'active' => 'boolean',
-        //     'body' => 'required',
-        //     'date' => 'nullable:date',
-        //     'thumbnail' => "image|mimes:png,jpg,jpeg,gif,svg|max:2048"
-        // ]);
+        $validated = $request->validate([
+            'title' => 'required|max:300',
+            'tags' => 'array|max:5',
+            'active' => 'boolean',
+            'body' => 'required',
+            'date' => 'nullable:date',
+            'thumbnail' => "image|mimes:png,jpg,jpeg,gif,svg|max:2048"
+        ]);
 
         $img = $request->file("thumbnail");
         $t = time();
@@ -345,8 +345,8 @@ class PostController extends Controller
             ->join('users', 'users.id', '=', 'posts.user_id')
             ->leftJoin('post_tags', 'posts.id', '=', 'post_tags.post_id')
             ->leftJoin('tags', 'post_tags.tag_id', '=', 'tags.id')
-            ->leftJoin("comments", "posts.id", "=", "comments.id")
             ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
+            ->leftJoin("post_likes", "posts.id", "=", "post_likes.post_id")
             ->where("posts.published_at", "<", Carbon::now())
             ->where("active", "=", true)
             ->select(
@@ -360,7 +360,8 @@ class PostController extends Controller
                 'users.name',
                 'users.email',
                 "profiles.profile_image",
-                DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags')
+                DB::raw('GROUP_CONCAT(DISTINCT tags.title) as tags'),
+                DB::raw("COUNT(DISTINCT CASE WHEN post_likes.is_like = 1 THEN 1 END) as totalLike"),
             )
             ->groupBy(
                 'posts.id',
@@ -377,8 +378,39 @@ class PostController extends Controller
             ->orderByRaw("DATE(posts.published_at) = CURDATE() DESC")
             ->orderBy("posts.published_at", 'DESC')
             ->paginate(10);
+
+        //plucking user id into array
+        $postId = $posts->pluck("id")->toArray();
+
+        //finding all comment on post
+        $comments = DB::table("comments")
+            ->leftJoin("users", "comments.user_id", "=", "users.id")
+            ->leftJoin("profiles", "comments.user_id", "=", "profiles.user_id")
+            ->where("comments.parent_id", "=", NULL)
+            ->whereIn("comments.post_id", $postId)
+            ->select(
+                "comments.post_id",
+                "comments.comment",
+                "comments.created_at",
+                "profiles.profile_image",
+                "users.id as user_id",
+                "users.name",
+                "comments.post_id"
+            )
+            ->get();
+
+        //grouping comments by post_id
+        $commentByPost = $comments->groupBy("post_id");
+        foreach ($posts as $post) {
+            $post->comments = [
+                'totalComment' => count($commentByPost->get($post->id) ?? []),
+                'last_comment' => count($commentByPost->get($post->id) ?? []) > 0 ? $commentByPost->get($post->id)[0] : [],
+            ];
+        }
         return $posts;
     }
+
+
 
     public function getSinglePost(Request $request)
     {
@@ -538,4 +570,89 @@ class PostController extends Controller
 
         return $posts;
     }
+
+    public function getRelevantPost(Request $request)
+    {
+        // First Query
+        $posts = DB::table('posts')
+            ->leftJoinSub(
+                DB::table('post_tags')
+                    ->leftJoin('follow_tags', 'post_tags.tag_id', '=', 'follow_tags.tag_id')
+                    ->where('follow_tags.user_id', '=', $request->header("user_id"))
+                    ->select('post_tags.post_id'),
+                'filtered_post_tags',
+                'posts.id',
+                'filtered_post_tags.post_id'
+            )
+
+            ->leftJoin('follow_users', function ($join) use ($request) {
+                $join->on('follow_users.following_user_id', '=', 'posts.user_id')
+                    ->where('follow_users.user_id', '=', $request->header("user_id"));
+            })
+
+            ->leftJoin('post_tags as pt2', 'posts.id', '=', 'pt2.post_id')
+            ->leftJoin('tags as t2', 'pt2.tag_id', '=', 't2.id')
+            ->leftJoin('profiles', 'posts.user_id', '=', 'profiles.user_id')
+            ->leftJoin('users', 'posts.user_id', '=', 'users.id')
+            ->select(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'posts.user_id',
+                'users.name',
+                'users.email',
+                'profiles.profile_image',
+                DB::raw('GROUP_CONCAT(DISTINCT t2.title) as tags')
+            )
+            ->groupBy(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'posts.user_id',
+                'users.name',
+                'users.email',
+                'profiles.profile_image'
+            )
+            ->paginate(10);
+
+        // Fetching comments
+        $postIds = $posts->pluck('id')->toArray();
+
+        $comments = DB::table('comments')
+            ->leftJoin('users', 'comments.user_id', '=', 'users.id')
+            ->leftJoin('profiles', 'comments.user_id', '=', 'profiles.user_id')
+            ->whereNull('comments.parent_id')
+            ->whereIn('comments.post_id', $postIds)
+            ->select(
+                'comments.post_id',
+                'comments.comment',
+                'comments.created_at',
+                'profiles.profile_image',
+                'users.id as user_id',
+                'users.name'
+            )
+            ->get();
+
+        // // Group comments by post_id
+        $commentByPost = $comments->groupBy('post_id');
+
+        foreach ($posts as $post) {
+            $postId = $post->id;
+            $post->comments = [
+                'totalComment' => $commentByPost->has($postId) ? $commentByPost[$postId]->count() : 0,
+                'last_comment' => $commentByPost->has($postId) ? $commentByPost[$postId]->first() : [],
+            ];
+        }
+
+        return $posts;
+    }
+
+
 }
+
