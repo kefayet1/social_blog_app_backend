@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SavePosts;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SavePostsController extends Controller
 {
@@ -71,4 +72,17 @@ class SavePostsController extends Controller
             ]);
         }
     }
+
+    public function getSavePost(Request $request) {
+        $posts = DB::table("posts")
+        ->leftJoin("save_posts", "posts.id", "=", "save_posts.post_id")
+        ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
+        ->leftJoin("users", "posts.user_id", "=", "users.id")
+        ->where("save_posts.user_id", "=", $request->header("user_id"))
+        ->select("posts.*", "profiles.profile_image", "users.name")
+        ->get();
+
+        return $posts;
+    }
+
 }

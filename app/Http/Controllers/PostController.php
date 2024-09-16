@@ -653,6 +653,11 @@ class PostController extends Controller
         return $posts;
     }
 
+    // public function getTopPost(Request $request)
+    // {
+    //     $posts = DB::table("posts")
+
+    // }
 
 }
 

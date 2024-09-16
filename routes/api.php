@@ -66,6 +66,7 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     //save post
     Route::post("/save_post", [SavePostsController::class, "savePost"]);
+    Route::post("/get_save_post", [SavePostsController::class, "getSavePost"]);
 
     //follow post
     Route::post("follow_And_Unfollow_Tag", [FollowTagController::class, "followAndUnFollowTag"]);
