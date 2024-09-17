@@ -653,11 +653,70 @@ class PostController extends Controller
         return $posts;
     }
 
-    // public function getTopPost(Request $request)
-    // {
-    //     $posts = DB::table("posts")
+    public function getTopPost(Request $request)
+    {
+        $posts = DB::table("posts")
+            ->leftJoin('post_likes', 'posts.id', '=', 'post_likes.post_id')
+            ->leftJoin("users", "posts.user_id", "=", "users.id")
+            ->leftJoin("profiles", "posts.user_id", "=", "profiles.user_id")
+            ->select(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'posts.user_id',
+                'users.name',
+                'users.email',
+                'profiles.profile_image',
+                DB::raw('COUNT(DISTINCT post_likes.user_id) as total_likes')
+            )
+            ->groupBy(
+                'posts.id',
+                'posts.title',
+                'posts.thumbnail',
+                'posts.body',
+                'posts.active',
+                'posts.published_at',
+                'posts.user_id',
+                'users.name',
+                'users.email',
+                'profiles.profile_image',
+            )
+            ->orderByDesc('total_likes')
+            ->paginate(10);
+        // Fetching comments
+        $postIds = $posts->pluck('id')->toArray();
 
-    // }
+        $comments = DB::table('comments')
+            ->leftJoin('users', 'comments.user_id', '=', 'users.id')
+            ->leftJoin('profiles', 'comments.user_id', '=', 'profiles.user_id')
+            ->whereNull('comments.parent_id')
+            ->whereIn('comments.post_id', $postIds)
+            ->select(
+                'comments.post_id',
+                'comments.comment',
+                'comments.created_at',
+                'profiles.profile_image',
+                'users.id as user_id',
+                'users.name'
+            )
+            ->get();
+
+        // // Group comments by post_id
+        $commentByPost = $comments->groupBy('post_id');
+
+        foreach ($posts as $post) {
+            $postId = $post->id;
+            $post->comments = [
+                'totalComment' => $commentByPost->has($postId) ? $commentByPost[$postId]->count() : 0,
+                'last_comment' => $commentByPost->has($postId) ? $commentByPost[$postId]->first() : [],
+            ];
+        }
+
+        return $posts;
+    }
 
 }
 

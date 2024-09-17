@@ -60,6 +60,7 @@ Route::middleware(['tokenVerify'])->group(function () {
 
     //post frontend
     Route::post("/get_relevant_post", [PostController::class, "getRelevantPost"]);
+ 
     
     //post like
     Route::post("/like_post", [PostLikeController::class, "likePost"]);
@@ -98,6 +99,7 @@ Route::post("/create_comment", [CommentController::class, "createComment"]);
 //Post
 Route::post("/get_post_by_tag_name", [PostController::class, "findPostByTag"]);
 Route::post("/get_post_by_user_id", [PostController::class, "getPostByUserId"]);
+   Route::post("/get_top_post", [PostController::class, "getTopPost"]);
 
 //tag
 // without it will not give is_follow value
