@@ -17,9 +17,9 @@ class NotificationController extends Controller
     {
 
         $notification = DB::table("notifications")
-            ->Join("users", "notifications.actor_id", "=", "users.id")
-            ->Join("posts", "notifications.post_id", "=", "posts.id")
-            ->join("tags", "notifications.tag_id", "=", "tags.id")
+            ->leftJoin("users", "notifications.actor_id", "=", "users.id")
+            ->leftJoin("posts", "notifications.post_id", "=", "posts.id")
+            ->leftJoin("tags", "notifications.tag_id", "=", "tags.id")
             ->where('notifications.user_id', "=", 3)
             ->select(
                 "notifications.id",

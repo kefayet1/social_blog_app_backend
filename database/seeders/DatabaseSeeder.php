@@ -6,9 +6,11 @@ namespace Database\Seeders;
 
 use App\Models\Comment;
 use App\Models\FollowUser;
+use App\Models\Notification;
 use App\Models\Post;
 use App\Models\PostTags;
 use App\Models\Profile;
+use App\Models\SavePosts;
 use App\Models\Tag;
 use App\Models\User;
 use Carbon\Carbon;
@@ -396,5 +398,28 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        //save post
+        foreach(range(1,5) as $user){
+            foreach(range(1, 20) as $post){
+                SavePosts::create([
+                    "is_save" => true,
+                    "post_id" => $post,
+                    "user_id" => $user
+                ]);
+
+                Notification::create([
+                    "text" => ".....hello",
+                    "is_seen" => false,
+                    "type" => "post",
+                    "user_id" => $user,
+                    "actor_id" => $user+1,
+                    "post_id" => $post,
+                    "tag_id" => null
+                ]);
+            }
+        }
+
+        
     }
 }
