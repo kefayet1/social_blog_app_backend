@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\Comment;
+use App\Models\FollowTag;
 use App\Models\FollowUser;
 use App\Models\Notification;
 use App\Models\Post;
@@ -370,7 +371,7 @@ class DatabaseSeeder extends Seeder
                     "comment" => fake()->realText(400)
                 ]);
 
-                foreach(range(1, 2) as $subChildCom){
+                foreach (range(1, 2) as $subChildCom) {
                     $subChildParent = Comment::create([
                         'user_id' => rand(1, 21),
                         'post_id' => $post,
@@ -378,7 +379,7 @@ class DatabaseSeeder extends Seeder
                         "comment" => fake()->realText(400)
                     ]);
 
-                      Comment::create([
+                    Comment::create([
                         'user_id' => rand(1, 21),
                         'post_id' => $post,
                         "parent_id" => $subChildParent->id,
@@ -416,8 +417,8 @@ class DatabaseSeeder extends Seeder
         }
 
         //save post
-        foreach(range(1,5) as $user){
-            foreach(range(1, 20) as $post){
+        foreach (range(1, 5) as $user) {
+            foreach (range(1, 20) as $post) {
                 SavePosts::create([
                     "is_save" => true,
                     "post_id" => $post,
@@ -429,13 +430,23 @@ class DatabaseSeeder extends Seeder
                     "is_seen" => false,
                     "type" => "post",
                     "user_id" => $user,
-                    "actor_id" => $user+1,
+                    "actor_id" => $user + 1,
                     "post_id" => $post,
                     "tag_id" => null
                 ]);
             }
         }
 
-        
+        //follow tags
+        foreach (range(1, 10) as $user) {
+            foreach (range(1, 15) as $tag) {
+                FollowTag::create([
+                    "is_follow" => true,
+                    "tag_id" => $tag,
+                    "user_id" => $user
+                ]);
+            }
+        }
+
     }
 }
