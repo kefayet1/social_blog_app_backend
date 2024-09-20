@@ -45,8 +45,9 @@ class CommentController extends Controller
     {
         $comments = DB::table("comments")
             ->leftJoin('users', 'comments.user_id', "=", 'users.id')
+            ->leftJoin("profiles", "comments.user_id", "=", "profiles.user_id")
             ->where('comments.post_id', '=', $request->input('id'))
-            ->select('comments.*', 'users.name')
+            ->select('comments.*', 'users.name', "profiles.profile_image")
             ->get();
         $groupComments = $comments->groupBy('parent_id');
 
@@ -77,7 +78,7 @@ class CommentController extends Controller
         $comment = Comment::create([
             'comment' => $request->input("comment"),
             'post_id' => $request->input('postId'),
-            'user_id' => $request->input('userId'),
+            'user_id' => $request->header('user_id'),
             'parent_id' => $request->input('parentId'),
         ]);
 

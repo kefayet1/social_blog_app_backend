@@ -86,6 +86,9 @@ Route::middleware(['tokenVerify'])->group(function () {
     //notification
     Route::post("/get_notification", [NotificationController::class, "getNotification"]);
 
+    //comment
+    Route::post("/create_comment", [CommentController::class, "createComment"]);
+
 });
 
 
@@ -94,7 +97,7 @@ Route::post("/test", [PostController::class, "testPost"]);
 Route::post("/noAuth_get_post", [PostController::class, "noAuthGetPost"]);
 Route::post("/get_single_post", [PostController::class, "getSinglePost"]);
 Route::post("/getComment", [CommentController::class, "getComment"]);
-Route::post("/create_comment", [CommentController::class, "createComment"]);
+
 
 //Post
 Route::post("/get_post_by_tag_name", [PostController::class, "findPostByTag"]);

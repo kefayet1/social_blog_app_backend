@@ -356,7 +356,7 @@ class DatabaseSeeder extends Seeder
 
         // Comment
         foreach (range(1, 300) as $post) {
-            foreach (range(1, 10) as $index) {
+            foreach (range(1, 5) as $index) {
                 $comment = Comment::create([
                     'user_id' => rand(1, 21),
                     'post_id' => $post,
@@ -369,6 +369,22 @@ class DatabaseSeeder extends Seeder
                     "parent_id" => $comment->id,
                     "comment" => fake()->realText(400)
                 ]);
+
+                foreach(range(1, 2) as $subChildCom){
+                    $subChildParent = Comment::create([
+                        'user_id' => rand(1, 21),
+                        'post_id' => $post,
+                        "parent_id" => $childComment->id,
+                        "comment" => fake()->realText(400)
+                    ]);
+
+                      Comment::create([
+                        'user_id' => rand(1, 21),
+                        'post_id' => $post,
+                        "parent_id" => $subChildParent->id,
+                        "comment" => fake()->realText(400)
+                    ]);
+                }
             }
         }
 
